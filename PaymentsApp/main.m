@@ -9,56 +9,60 @@
 #import <Foundation/Foundation.h>
 #import "PaymentGateway.h"
 #import "InputCollector.h"
+#import "StripePaymentService.h"
+#import "PaypalPaymentService.h"
+#import "AmazonPaymentService.h"
+#import "ApplePaymentService.h"
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        InputCollector *userInput = [InputCollector new];
+        InputCollector *inputString = [InputCollector new];
+
+        NSInteger totalAmount = arc4random_uniform(900)+ 100;
+        NSString *paymentMethod = [inputString inputForPrompt:[NSString stringWithFormat:@"Thank you for shopping at Acme.com Your total today is %ld Please select your payment method: 1: Paypal, 2: Stripe, 3: Amazon 4: Apple Pay", (long)totalAmount]];
+        
+        int paymentOption = [paymentMethod intValue];
         
         
-        NSInteger paymentTotal = (NSInteger)(arc4random(900) + 100);
-        NSString *paymentMethod = [userInput inputForPrompt:[NSString stringWithFormat:@"\nThank you for shopping at Acme.com. Your total today is: $%ld Please select your payment method:\n1: Paypal\n2: Stripe\n3: Amazon\n4: ApplePay", (long)paymentTotal]];
-        
-        
-        int paymentMethodInt = [paymentMethod intValue];
         
         PaymentGateway *paymentGateway = [PaymentGateway new];
+        PaypalPaymentService *paypalPaymentService = [[PaypalPaymentService alloc] init];
+        StripePaymentService *stripePaymentService = [[StripePaymentService alloc] init];
+        AmazonPaymentService *amazonPaymentService = [[AmazonPaymentService alloc] init];
+        ApplePayPaymentService *applePayPaymentService = [[ApplePayPaymentService alloc] init];
         
-        if (paymentMethodInt == 1) {
-            PaypalPaymentService *paypalPS = [PaypalPaymentService new];
-            paymentGateway.delegate = paypalPS;
+        switch(paymentOption) {
+            case 1:
+                paymentGateway.delegate = paypalPaymentService;
+                //[paymentGateway processPaymentAmout:&totalAmount];
+
+                NSLog(@"Payment was made by Paypal");
+                
+            case 2:
+                paymentGateway.delegate = stripePaymentService;
+                //[paymentGateway processPaymentAmout:&totalAmount];
+
+                NSLog(@"Payment was made by Stripe");
+            case 3:
+                paymentGateway.delegate = amazonPaymentService;
+                //[paymentGateway processPaymentAmout:&totalAmount];
+
+                NSLog(@"Payment was made by Paypal");
+            case 4:
+                paymentGateway.delegate = applePayPaymentService;
+                //[paymentGateway processPaymentAmout:&totalAmount];
+
+                NSLog(@"Payment was made by Apple Pay");
+        default:
+                NSLog(@"Invalid Option. Please try it again.");
+                break;
             
-            NSLog(@"Payment method is Paypal");
-            
-        } else if (paymentMethodInt == 2) {
-            StripePaymentService *stripePS = [StripePaymentService new];
-            paymentGateway.delegate = stripePS;
-            
-            NSLog(@"Payment method is Stripe");
-        } else if (paymentMethodInt == 3) {
-            AmazonPaymentService *amazonPS = [AmazonPaymentService new];
-            paymentGateway.delegate = amazonPS;
-            
-            NSLog(@"Payment method is Amazon");
         }
+        [paymentGateway processPaymentAmout:&totalAmount];
         
-        [paymentGateway processPaymentAmout:&paymentTotal];
-        
-        NSLog(@"%d", paymentMethodInt);
         
         
     }
-    return 0;
 
     return 0;
 }
-
-
-#import <Foundation/Foundation.h>
-#import "PaypalPaymentService.h"
-#import "StripePaymentService.h"
-#import "AmazonPaymentService.h"
-
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        
- }
